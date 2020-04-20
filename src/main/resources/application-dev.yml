@@ -1,0 +1,29 @@
+server:
+  port: 8700
+
+# datasource
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    username: root
+    password: root
+    url: jdbc:mysql://127.0.0.1:3306/rx?charactorEncoding=utf8&serverTimezone=UTC&useSSL=false
+    driver-class-name: com.mysql.jdbc.Driver
+    hikari:
+      initialization-fail-timeout: 30000
+      connection-timeout: 30000
+      minimum-idle: 10
+      maximum-pool-size: 50
+      max-lifetime: 600000
+      pool-name: maillDataBasePool
+      connection-init-sql: null
+
+# mybatis配置
+mybatis:
+  mapper-locations: classpath:/mapper/*.xml
+  type-aliases-package: com.nearze.pojo.*
+
+# log
+logging:
+  level:
+    root: info
