@@ -16,9 +16,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class GateWayServer {
 
-    private static ServerSocket SERVERSOCKET = null;
+    public static ServerSocket SERVERSOCKET = null;
+    public static Socket socket;
 
     static {
+        socket = null;
         try {
             SERVERSOCKET = new ServerSocket(8598);
             System.out.println("创建ServerSocket对象成功：prot:8598");
@@ -38,14 +40,13 @@ public class GateWayServer {
     public static void startListenGateWay(){
         try {
             while (true) {
-                Socket socket = SERVERSOCKET.accept();
+                socket = SERVERSOCKET.accept();
                 System.out.println("test：" + flag.getAndIncrement());
 
                 SocketProcess.readData(socket);
                 log.error("读取任务完成");
-                SocketProcess.sendData(socket);
+                //SocketProcess.sendData(socket);
                 log.error("发送任务完成");
-
             }
 
         } catch (IOException e) {

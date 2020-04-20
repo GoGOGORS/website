@@ -44,32 +44,78 @@ public class SocketProcess {
         InputStream inputStream = null;
         try {
             inputStream = socket.getInputStream();
+            byte[] b = new byte[1];
+            while (-1 !=(inputStream.read(b))){
+                System.out.println(Integer.toHexString(b[0]));
+
+                switch (b[0]){
+                    case (byte) 0xff: break;
+                    //认证
+                    case (byte) 0xfe: authentication(socket, inputStream); break;
+                    case (byte) 0x12: break;
+                    default:
+                        processData(socket, inputStream);
+                        break;
+                }
+
+            }
+
         } catch (IOException e) {
             log.error("获取输入流错误：" + e.getMessage());
         }
 
-        if (null != inputStream){
-            InputStream dataInputStream = new DataInputStream(inputStream);
-            POOL.execute(() -> {
-                byte[] bytes = new byte[64];
-                try {
-                    dataInputStream.read(bytes);
-                    StringBuilder builder = new StringBuilder();
-                    for (byte b : bytes) {
-                        builder.append(Integer.toHexString(b & 0xff)).append("-");
-                    }
+    }
 
-                    builder.replace(builder.length()-1, builder.length(), "");
-                    log.info("收到数据：" + builder);
-                    System.out.println("收到数据：" + builder);
-                } catch (IOException e) {
-                    log.error("读取信息错误：" + e);
-                    System.out.println(e.toString());
+    private static void processData(Socket socket, InputStream inputStream) {
+
+
+    }
+
+
+    /**
+     * 认证
+     * @param socket
+     * @param inputStream
+     */
+    private static void authentication(Socket socket, InputStream inputStream) {
+        byte[] bytes = new byte[35];
+        try {
+            while (-1 != (inputStream.read(bytes))){
+                StringBuilder stringBuilder = new StringBuilder();
+                StringBuilder stringBuilder2 = new StringBuilder();
+                StringBuilder sb = new StringBuilder();
+                StringBuilder sb2 = new StringBuilder();
+                int flag = 0;
+                for (byte b : bytes) {
+                    stringBuilder2.append(Integer.toHexString(b));
+                    sb2.append(Integer.toHexString(bytes[flag]&0xff));
+                    flag++;
                 }
-            });
+
+                System.out.println("stringBuilder2" + stringBuilder2);
+                System.out.println("sb2" + sb2);
+                for (int i = 0; i < bytes.length; i++) {
+                   if (0 == i){
+                       stringBuilder.append(Integer.toHexString(bytes[i]));
+                       sb.append(Integer.toHexString(bytes[i]&0xff));
+                   }else if (i > 0){
+                       stringBuilder.append("-").append(Integer.toHexString(bytes[i]&0xff));
+                       sb.append("-"+Integer.toHexString(bytes[i]&0xff));
+                   }
+                }
+                System.out.println("===========");
+                System.out.println("stringBuilder" + stringBuilder);
+                System.out.println("sb" + sb);
+
+
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
 
     }
+
+
 
     /**
      * 发送线程
@@ -102,40 +148,6 @@ public class SocketProcess {
         }
 
     }
-
-
-    /**
-     * 心跳检测
-     * @param socket
-     */
-   /* public static void heartBeat(Socket socket) {
-        try {
-            OutputStream socketOutputStream = socket.getOutputStream();
-            DataOutputStream outputStream = new DataOutputStream(socketOutputStream);
-            POOL.execute(() -> {
-                ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(3);
-                scheduledExecutorService.scheduleWithFixedDelay(() -> {
-                    byte[] bytes = {0x08, 0x11, 0, 0, 0x3f, 0x68};
-                    try {
-                        outputStream.write(bytes, 0, bytes.length);
-                        outputStream.flush();
-                        StringBuilder builder = new StringBuilder();
-                        for (byte b : bytes) {
-                            builder.append(Integer.toHexString(b & 0xff)).append("-");
-                        }
-                        System.out.println("心跳检测发送成功："+ builder.replace(builder.length()-1, builder.length(), ""));
-                    } catch (IOException e) {
-                        log.error("心跳检测异常：" + e.getMessage());
-                    }
-
-                }, 10000, 10000, TimeUnit.MILLISECONDS);
-            });
-        } catch (IOException e) {
-            log.error("定时器获取输出流错误：" + e);
-        }
-
-
-    }*/
 
 
     /**
